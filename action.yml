@@ -4,11 +4,42 @@ inputs:
   rubygems_api_key:
     description: 'RubyGems API key'
     required: true
+  github_token:
+    description: 'Github token'
+    required: true
+  ruby_version:
+    description: "Ruby version"
+    required: false
 
 runs:
   using: "composite"
   steps:
     - uses: actions/checkout@v1
+    - uses: ruby/setup-ruby@v1
+      with:
+        bundler-cache: true
+        ruby_version: ${{ inputs.ruby_version || env.RUBY_VERSION }}
+    - name: Setup git and gh
+      run: |
+        git config user.name "${GITHUB_ACTOR}"
+        git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+        echo ${{ inputs.github_token }} | gh auth login --with-token
+      shell: bash
+    - run: gem install parse_gemspec-cli
+      name: Intall gem parser
+      shell: bash
+    - run: echo "::set-output name=tag::$(parse-gemspec-cli *.gemspec | jq .'version')"
+      name: Set tag version
+      id: set_tag
+      shell: bash
+    - name: Add tag and push
+      run: |
+        git tag
+        git push --tags
+      shell: bash
+    - name: Create release
+      run: gh release create ${{ steps.set_tag.outputs.tag }} --generate-notes
+      shell: bash
     - name: Publish to RubyGems
       run: |
         mkdir -p $HOME/.gem
