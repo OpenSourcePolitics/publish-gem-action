@@ -21,9 +21,12 @@ runs:
         ruby_version: ${{ inputs.ruby_version || env.RUBY_VERSION }}
     - name: Setup git and gh
       run: |
+        git --version
         git config user.name "${GITHUB_ACTOR}"
         git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
         echo ${{ inputs.github_token }} | gh auth login --with-token
+        gh auth status
+        echo "${GITHUB_ACTOR}"
       shell: bash
     - run: gem install parse_gemspec-cli
       name: Intall gem parser
