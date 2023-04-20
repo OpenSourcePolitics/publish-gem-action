@@ -3,7 +3,7 @@ description: 'Run RSpec tests'
 inputs:
   rubygems_api_key:
     description: 'RubyGems API key'
-    required: false
+    required: true
 
 runs:
   using: "composite"
@@ -18,5 +18,5 @@ runs:
         gem build *.gemspec
         gem push *.gem
       env:
-        GEM_HOST_API_KEY: "${{ inputs.rubygems_api_key || secrets.RUBYGEMS_API_KEY }}"
+        GEM_HOST_API_KEY: "${{ inputs.rubygems_api_key }}"
       shell: bash
