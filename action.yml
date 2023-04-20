@@ -20,10 +20,7 @@ runs:
         bundler-cache: true
         ruby_version: ${{ inputs.ruby_version || env.RUBY_VERSION }}
     - name: Setup git and gh
-      run: |
-        git config user.name "${GITHUB_ACTOR}"
-        git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
-        echo ${{ inputs.github_token }} | gh auth login --with-token
+      run: echo ${{ inputs.github_token }} | gh auth login --with-token
       shell: bash
     - run: gem install parse_gemspec-cli
       name: Intall gem parser
@@ -31,11 +28,6 @@ runs:
     - run: echo "::set-output name=tag::$(parse-gemspec-cli *.gemspec | jq .'version')"
       name: Set tag version
       id: set_tag
-      shell: bash
-    - name: Add tag and push
-      run: |
-        git tag
-        git push --tags
       shell: bash
     - name: Create release
       run: gh release create ${{ steps.set_tag.outputs.tag }} --generate-notes
